@@ -1,4 +1,3 @@
-
 --[[
     Pro Mobile & PC UI Library v6.1 (Massive Icon Update)
     =====================================================
@@ -600,10 +599,30 @@ function Library:CreateWindow(config)
         -- เพิ่ม Offset เริ่มต้นเพื่อทำ Slide-in Animation
         Toast.Position = UDim2.new(0, 30, 0, 0) 
         Toast.Parent = Slot
-        corner(Toast, 14)
+        corner(Toast, 18)
         local outline = stroke(Toast)
         outline.Thickness = 1
         outline.Transparency = 1
+
+        -- ชั้นสีบางๆ ไล่เฉดตามประเภทแจ้งเตือน ให้การ์ดดูมีโทนสีแทนที่จะเทาแบนๆ
+        local ColorTint = Instance.new("Frame")
+        ColorTint.Name = "ColorTint"
+        ColorTint.Size = UDim2.new(1, 0, 1, 0)
+        ColorTint.BackgroundColor3 = color
+        ColorTint.BorderSizePixel = 0
+        ColorTint.ZIndex = 2
+        ColorTint.BackgroundTransparency = 1
+        ColorTint.Parent = Toast
+        corner(ColorTint, 18)
+        local tintGradient = Instance.new("UIGradient")
+        tintGradient.Color = ColorSequence.new(color, color:Lerp(Theme.Element, 1))
+        tintGradient.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.86),
+            NumberSequenceKeypoint.new(0.6, 0.97),
+            NumberSequenceKeypoint.new(1, 1),
+        })
+        tintGradient.Rotation = 100
+        tintGradient.Parent = ColorTint
 
         -- เอฟเฟกต์ Glass Sheen บางๆ เพื่อให้การ์ดดูมีมิติ
         local Sheen = Instance.new("Frame")
@@ -614,7 +633,7 @@ function Library:CreateWindow(config)
         Sheen.ZIndex = 3
         Sheen.Active = false
         Sheen.Parent = Toast
-        corner(Sheen, 14)
+        corner(Sheen, 18)
         local sheenGradient = Instance.new("UIGradient")
         sheenGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 255, 255))
         sheenGradient.Transparency = NumberSequence.new({
@@ -659,18 +678,27 @@ function Library:CreateWindow(config)
         -- วงกลมไอคอน (Badge) สีพาสเทลโทนนุ่มนวล
         local IconBadge = Instance.new("Frame")
         IconBadge.AnchorPoint = Vector2.new(0, 0)
-        IconBadge.Size = UDim2.new(0, 32, 0, 32)
-        IconBadge.Position = UDim2.new(0, 22, 0, 16)
-        IconBadge.BackgroundColor3 = color:Lerp(Theme.Element, 0.75)
+        IconBadge.Size = UDim2.new(0, 34, 0, 34)
+        IconBadge.Position = UDim2.new(0, 18, 0, 16)
+        IconBadge.BackgroundColor3 = color:Lerp(Theme.Element, 0.7)
         IconBadge.BackgroundTransparency = 1
         IconBadge.ZIndex = 4
         IconBadge.Parent = Toast
-        corner(IconBadge, 10)
+        corner(IconBadge, 12)
+        local badgeGradient = Instance.new("UIGradient")
+        badgeGradient.Color = ColorSequence.new(color:Lerp(Color3.new(1, 1, 1), 0.12), color:Lerp(Theme.Element, 0.55))
+        badgeGradient.Rotation = 90
+        badgeGradient.Parent = IconBadge
+        local badgeStroke = Instance.new("UIStroke")
+        badgeStroke.Color = color
+        badgeStroke.Transparency = 0.55
+        badgeStroke.Thickness = 1
+        badgeStroke.Parent = IconBadge
 
         local IconImg = Instance.new("ImageLabel")
         IconImg.AnchorPoint = Vector2.new(0.5, 0.5)
         IconImg.Position = UDim2.new(0.5, 0, 0.5, 0)
-        IconImg.Size = UDim2.new(0, 16, 0, 16)
+        IconImg.Size = UDim2.new(0, 17, 0, 17)
         IconImg.BackgroundTransparency = 1
         IconImg.Image = NOTIFY_ICON[ntype] or Library.Icons.info
         IconImg.ImageColor3 = color
@@ -682,20 +710,20 @@ function Library:CreateWindow(config)
         -- ข้อความ
         local TextHolder = Instance.new("Frame")
         TextHolder.BackgroundTransparency = 1
-        TextHolder.Position = UDim2.new(0, 64, 0, 14)
-        TextHolder.Size = UDim2.new(1, -100, 0, 0)
+        TextHolder.Position = UDim2.new(0, 66, 0, 17)
+        TextHolder.Size = UDim2.new(1, -104, 0, 0)
         TextHolder.AutomaticSize = Enum.AutomaticSize.Y
         TextHolder.ZIndex = 4
         TextHolder.Parent = Toast
         local Layout = Instance.new("UIListLayout")
-        Layout.Padding = UDim.new(0, 4)
+        Layout.Padding = UDim.new(0, 5)
         Layout.Parent = TextHolder
 
         local TitleLbl = Instance.new("TextLabel")
         TitleLbl.BackgroundTransparency = 1
         TitleLbl.Size = UDim2.new(1, 0, 0, 16)
         TitleLbl.Font = Enum.Font.GothamBold
-        TitleLbl.TextSize = 14
+        TitleLbl.TextSize = 14.5
         applyThemeColor(TitleLbl, "Text", "TextColor3")
         TitleLbl.TextXAlignment = Enum.TextXAlignment.Left
         TitleLbl.TextTransparency = 1
@@ -725,30 +753,44 @@ function Library:CreateWindow(config)
         BottomSpacer.ZIndex = 4
         BottomSpacer.Parent = TextHolder
 
-        -- ปุ่มปิด X
+        -- ปุ่มปิด X พร้อมพื้นหลังวงกลมนุ่มๆ ตอน hover
         local CloseX = Instance.new("ImageButton")
         CloseX.AnchorPoint = Vector2.new(1, 0)
-        CloseX.Position = UDim2.new(1, -12, 0, 12)
-        CloseX.Size = UDim2.new(0, 18, 0, 18)
+        CloseX.Position = UDim2.new(1, -10, 0, 10)
+        CloseX.Size = UDim2.new(0, 24, 0, 24)
+        CloseX.BackgroundColor3 = Theme.SubText
         CloseX.BackgroundTransparency = 1
         CloseX.AutoButtonColor = false
-        CloseX.Image = Library.Icons.close
-        applyThemeColor(CloseX, "SubText", "ImageColor3")
-        CloseX.ImageTransparency = 1
         CloseX.ZIndex = 5
         CloseX.Parent = Toast
+        corner(CloseX, 8)
+
+        local CloseXIcon = Instance.new("ImageLabel")
+        CloseXIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+        CloseXIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
+        CloseXIcon.Size = UDim2.new(0, 13, 0, 13)
+        CloseXIcon.BackgroundTransparency = 1
+        CloseXIcon.Image = Library.Icons.close
+        applyThemeColor(CloseXIcon, "SubText", "ImageColor3")
+        CloseXIcon.ImageTransparency = 1
+        CloseXIcon.ScaleType = Enum.ScaleType.Fit
+        CloseXIcon.ZIndex = 6
+        CloseXIcon.Parent = CloseX
+
         CloseX.MouseEnter:Connect(function()
-            TweenService:Create(CloseX, TI.d012_Sine_Out, {ImageColor3 = Theme.Text}):Play()
+            TweenService:Create(CloseX, TI.d012_Sine_Out, {BackgroundTransparency = 0.88}):Play()
+            TweenService:Create(CloseXIcon, TI.d012_Sine_Out, {ImageColor3 = Theme.Text}):Play()
         end)
         CloseX.MouseLeave:Connect(function()
-            TweenService:Create(CloseX, TI.d012_Sine_Out, {ImageColor3 = Theme.SubText}):Play()
+            TweenService:Create(CloseX, TI.d012_Sine_Out, {BackgroundTransparency = 1}):Play()
+            TweenService:Create(CloseXIcon, TI.d012_Sine_Out, {ImageColor3 = Theme.SubText}):Play()
         end)
 
         -- แถบนับถอยหลัง (Progress bar) ด้านล่างสุดแบบเต็มความกว้าง
         local ProgressTrack = Instance.new("Frame")
         ProgressTrack.AnchorPoint = Vector2.new(0.5, 1)
-        ProgressTrack.Position = UDim2.new(0.5, 0, 1, -8)
-        ProgressTrack.Size = UDim2.new(1, -24, 0, 4)
+        ProgressTrack.Position = UDim2.new(0.5, 0, 1, -10)
+        ProgressTrack.Size = UDim2.new(1, -28, 0, 3)
         applyThemeColor(ProgressTrack, "Stroke")
         ProgressTrack.BackgroundTransparency = 1
         ProgressTrack.BorderSizePixel = 0
@@ -764,6 +806,9 @@ function Library:CreateWindow(config)
         ProgressBar.ZIndex = 5
         ProgressBar.Parent = ProgressTrack
         corner(ProgressBar, 2)
+        local progressGradient = Instance.new("UIGradient")
+        progressGradient.Color = ColorSequence.new(color:Lerp(Color3.new(1, 1, 1), 0.2), color)
+        progressGradient.Parent = ProgressBar
 
         -- UIScale สำหรับทำเอฟเฟกต์เด้ง
         local ToastScale = Instance.new("UIScale")
@@ -786,8 +831,9 @@ function Library:CreateWindow(config)
         TweenService:Create(Toast, TI.d024_Quint_Out, {Position = UDim2.new(0, 0, 0, 0)}):Play()
         TweenService:Create(ToastScale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
         TweenService:Create(Toast, TI.d022_Sine_Out, {BackgroundTransparency = 0}):Play()
-        TweenService:Create(outline, TI.d022_Sine_Out, {Transparency = 0.6}):Play()
-        TweenService:Create(Shadow, TI.d03_Sine_Out, {ImageTransparency = 0.65}):Play()
+        TweenService:Create(outline, TI.d022_Sine_Out, {Transparency = 0.45}):Play()
+        TweenService:Create(ColorTint, TI.d022_Sine_Out, {BackgroundTransparency = 0}):Play()
+        TweenService:Create(Shadow, TI.d03_Sine_Out, {ImageTransparency = 0.55}):Play()
 
         TweenService:Create(AccentBar, TweenInfo.new(0.38, Enum.EasingStyle.Quint, Enum.EasingDirection.Out, 0, false, 0.04), {Size = UDim2.new(0, 4, 0, targetHeight - 32), BackgroundTransparency = 0}):Play()
 
@@ -797,7 +843,7 @@ function Library:CreateWindow(config)
 
         TweenService:Create(TitleLbl, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.1), {TextTransparency = 0}):Play()
         TweenService:Create(ContentLbl, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.16), {TextTransparency = 0}):Play()
-        TweenService:Create(CloseX, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.2), {ImageTransparency = 0.4}):Play()
+        TweenService:Create(CloseXIcon, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.2), {ImageTransparency = 0.25}):Play()
 
         ProgressBar.BackgroundTransparency = 1
         TweenService:Create(ProgressBar, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.22), {BackgroundTransparency = 0}):Play()
@@ -816,12 +862,13 @@ function Library:CreateWindow(config)
             TweenService:Create(IconBadge, TI.d016_Sine_In, {Rotation = 12, BackgroundTransparency = 1}):Play()
             TweenService:Create(Toast, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
             TweenService:Create(outline, TI.d018_Sine_Out, {Transparency = 1}):Play()
+            TweenService:Create(ColorTint, TI.d018_Sine_Out, {BackgroundTransparency = 1}):Play()
             TweenService:Create(Shadow, TI.d018_Sine_Out, {ImageTransparency = 1}):Play()
             TweenService:Create(AccentBar, TI.d016_Sine_In, {BackgroundTransparency = 1}):Play()
             TweenService:Create(IconImg, TI.d014_Sine_Out, {ImageTransparency = 1}):Play()
             TweenService:Create(TitleLbl, TI.d014_Sine_Out, {TextTransparency = 1}):Play()
             TweenService:Create(ContentLbl, TI.d014_Sine_Out, {TextTransparency = 1}):Play()
-            TweenService:Create(CloseX, TI.d014_Sine_Out, {ImageTransparency = 1}):Play()
+            TweenService:Create(CloseXIcon, TI.d014_Sine_Out, {ImageTransparency = 1}):Play()
             TweenService:Create(ProgressTrack, TI.d014_Sine_Out, {BackgroundTransparency = 1}):Play()
             TweenService:Create(ProgressBar, TI.d014_Sine_Out, {BackgroundTransparency = 1}):Play()
             
