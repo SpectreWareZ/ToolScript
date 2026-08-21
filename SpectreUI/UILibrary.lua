@@ -913,6 +913,16 @@ function Library:CreateWindow(config)
     local mainStroke = stroke(MainFrame)
     mainStroke.Transparency = 1
 
+    -- CanvasGroup ห่อ TopBar/Tabs/Content ไว้ เพื่อให้ fade ตอนซ่อน/ปิด UI
+    -- เป็นภาพเดียวกันทั้งหมดพร้อมกัน แทนที่จะเห็นแต่ละส่วนจางไม่พร้อมกัน
+    local MainContent = Instance.new("CanvasGroup")
+    MainContent.Name = "MainContent"
+    MainContent.Size = UDim2.new(1, 0, 1, 0)
+    MainContent.BackgroundTransparency = 1
+    MainContent.GroupTransparency = 0
+    MainContent.Parent = MainFrame
+    corner(MainContent, 14)
+
     local WindowScale = Instance.new("UIScale")
     WindowScale.Scale = 1
     WindowScale.Parent = Shadow
@@ -943,7 +953,7 @@ function Library:CreateWindow(config)
     TopBar.BackgroundTransparency = 1
     TopBar.BorderSizePixel = 0
     TopBar.Active = true
-    TopBar.Parent = MainFrame
+    TopBar.Parent = MainContent
     corner(TopBar, 14)
     
     local topBarFix = Instance.new("Frame")
@@ -1113,20 +1123,24 @@ function Library:CreateWindow(config)
         if visible then
             ScreenGui.Enabled = true
             RestoreBtn.Visible = false
-            WindowScale.Scale = 1
+            WindowScale.Scale = 0.94
             Shadow.Position = hiddenShadowPos
             MainFrame.BackgroundTransparency = 1
             mainStroke.Transparency = 1
+            MainContent.GroupTransparency = 1
             local easeIn = TI.d024_Quint_Out
+            TweenService:Create(WindowScale, TI.d022_Back_Out, {Scale = 1}):Play()
             TweenService:Create(Shadow, easeIn, {Position = baseShadowPos}):Play()
             TweenService:Create(MainFrame, easeIn, {BackgroundTransparency = 0}):Play()
             TweenService:Create(mainStroke, easeIn, {Transparency = 0.5}):Play()
+            TweenService:Create(MainContent, TI.d022_Sine_Out, {GroupTransparency = 0}):Play()
         else
-            local easeOut = TI.d018_Quint_In
-            local t = TweenService:Create(WindowScale, easeOut, {Scale = 0.92})
+            local easeOut = TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+            local t = TweenService:Create(WindowScale, easeOut, {Scale = 0.9})
             TweenService:Create(Shadow, easeOut, {Position = hiddenShadowPos}):Play()
             TweenService:Create(MainFrame, easeOut, {BackgroundTransparency = 1}):Play()
             TweenService:Create(mainStroke, easeOut, {Transparency = 1}):Play()
+            TweenService:Create(MainContent, TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {GroupTransparency = 1}):Play()
             t:Play()
             t.Completed:Connect(function()
                 if myToken ~= hideToken then return end
@@ -1188,7 +1202,7 @@ function Library:CreateWindow(config)
     TabContainer.BackgroundTransparency = 1
     TabContainer.BorderSizePixel = 0
     TabContainer.Active = true
-    TabContainer.Parent = MainFrame
+    TabContainer.Parent = MainContent
     corner(TabContainer, 12)
 
     local TabList = Instance.new("ScrollingFrame")
@@ -1211,7 +1225,7 @@ function Library:CreateWindow(config)
     ContentArea.Position = UDim2.new(0, 118, 0, topBarH)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Active = true
-    ContentArea.Parent = MainFrame
+    ContentArea.Parent = MainContent
 
     local resizing = false
     local ResizeHandle = Instance.new("ImageButton")
@@ -1222,7 +1236,7 @@ function Library:CreateWindow(config)
     ResizeHandle.AutoButtonColor = false
     ResizeHandle.Image = ""
     ResizeHandle.ZIndex = 6
-    ResizeHandle.Parent = MainFrame
+    ResizeHandle.Parent = MainContent
 
     local ResizeIcon = Instance.new("ImageLabel")
     ResizeIcon.AnchorPoint = Vector2.new(1, 1)
@@ -1309,12 +1323,13 @@ function Library:CreateWindow(config)
             ScreenGui:Destroy(); RestoreGui:Destroy(); NotifyGui:Destroy()
         end
         if ScreenGui.Enabled then
-            local easeOut = TI.d02_Quint_In
+            local easeOut = TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
             TweenService:Create(WindowScale, easeOut, {Scale = 0.9}):Play()
             TweenService:Create(Shadow, easeOut, {Position = hiddenShadowPos, ImageTransparency = 1}):Play()
             TweenService:Create(MainFrame, easeOut, {BackgroundTransparency = 1}):Play()
             TweenService:Create(mainStroke, easeOut, {Transparency = 1}):Play()
-            task.delay(0.2, finalize)
+            TweenService:Create(MainContent, TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {GroupTransparency = 1}):Play()
+            task.delay(0.22, finalize)
         else
             finalize()
         end
